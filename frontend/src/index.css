@@ -1,0 +1,268 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-[#f5f7fb] text-slate-900 font-sans antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+
+  button,
+  a {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+  }
+}
+
+/* Custom Sleek Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Glassmorphism subtle helper */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 232, 240, 0.8);
+}
+
+.gradient-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+}
+
+.landing-hero {
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse at 70% 22%, rgba(196, 228, 209, 0.3), transparent 34%),
+    linear-gradient(128deg, #fbfcfa 0%, #f5f8f4 52%, #edf4ef 100%);
+}
+
+.landing-hero__glow {
+  position: absolute;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(1px);
+  pointer-events: none;
+}
+
+.landing-hero__glow--one {
+  top: 4%;
+  right: 8%;
+  width: 19rem;
+  height: 19rem;
+  background: radial-gradient(circle, rgba(174, 218, 196, 0.24), transparent 70%);
+  animation: landing-glow 9s ease-in-out infinite alternate;
+}
+
+.landing-hero__glow--two {
+  bottom: 3%;
+  left: 23%;
+  width: 15rem;
+  height: 15rem;
+  background: radial-gradient(circle, rgba(204, 219, 248, 0.2), transparent 72%);
+  animation: landing-glow 11s ease-in-out infinite alternate-reverse;
+}
+
+.landing-hero__dots {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  opacity: 0.22;
+  background-image: radial-gradient(rgba(63, 105, 88, 0.3) 0.7px, transparent 0.7px);
+  background-position: center;
+  background-size: 24px 24px;
+  mask-image: linear-gradient(90deg, transparent 30%, #000 100%);
+}
+
+.landing-art {
+  background:
+    radial-gradient(ellipse at 51% 47%, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.48) 37%, transparent 68%),
+    linear-gradient(145deg, rgba(224, 240, 230, 0.6), rgba(231, 236, 250, 0.48));
+}
+
+.landing-art--blue {
+  background:
+    radial-gradient(ellipse at 51% 47%, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.48) 37%, transparent 68%),
+    linear-gradient(145deg, rgba(218, 231, 252, 0.64), rgba(226, 242, 238, 0.5));
+}
+
+.landing-art--violet {
+  background:
+    radial-gradient(ellipse at 51% 47%, rgba(255, 255, 255, 0.94), rgba(255, 255, 255, 0.48) 37%, transparent 68%),
+    linear-gradient(145deg, rgba(236, 224, 250, 0.64), rgba(224, 240, 232, 0.52));
+}
+
+.landing-art__grid {
+  opacity: 0.5;
+  background-image: linear-gradient(rgba(68, 107, 89, 0.055) 1px, transparent 1px), linear-gradient(90deg, rgba(68, 107, 89, 0.055) 1px, transparent 1px);
+  background-size: 28px 28px;
+  mask-image: radial-gradient(ellipse, #000 12%, transparent 75%);
+}
+
+.landing-art__orb {
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.97), rgba(182, 222, 198, 0.48) 38%, rgba(167, 207, 220, 0.13) 70%, transparent 72%);
+  filter: blur(1px);
+}
+
+.landing-art--blue .landing-art__orb {
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.97), rgba(176, 199, 246, 0.52) 38%, rgba(167, 219, 212, 0.13) 70%, transparent 72%);
+}
+
+.landing-art--violet .landing-art__orb {
+  background: radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.97), rgba(203, 180, 238, 0.5) 38%, rgba(164, 220, 203, 0.13) 70%, transparent 72%);
+}
+
+.landing-art__orbit {
+  border-color: rgba(57, 101, 78, 0.1);
+  transform: rotate(-24deg) scaleY(0.48);
+}
+
+.landing-art__orbit--inner {
+  border-color: rgba(57, 101, 78, 0.09);
+  transform: rotate(30deg) scaleY(0.48);
+}
+
+.landing-art__card {
+  background:
+    radial-gradient(circle at 87% 14%, rgba(194, 238, 211, 0.24), transparent 35%),
+    linear-gradient(135deg, #214b3f, #15372f 70%, #1c4438);
+}
+
+.landing-art--blue .landing-art__card {
+  background:
+    radial-gradient(circle at 87% 14%, rgba(188, 219, 255, 0.3), transparent 35%),
+    linear-gradient(135deg, #2c4e7a, #1d3858 70%, #234d55);
+}
+
+.landing-art--violet .landing-art__card {
+  background:
+    radial-gradient(circle at 87% 14%, rgba(221, 193, 255, 0.26), transparent 35%),
+    linear-gradient(135deg, #504273, #302a52 70%, #274a4d);
+}
+
+.landing-copy {
+  animation: landing-enter 650ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.landing-art-wrap {
+  animation: landing-enter 800ms cubic-bezier(0.2, 0.75, 0.25, 1) both;
+}
+
+.landing-float {
+  animation: landing-float 7s ease-in-out infinite;
+}
+
+.landing-float--slow {
+  animation-duration: 8.5s;
+  animation-delay: -1.5s;
+}
+
+.landing-float--reverse {
+  animation-duration: 9s;
+  animation-delay: -3s;
+}
+
+.landing-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  background: #c8d3cc;
+  transition: width 250ms ease, background-color 250ms ease;
+}
+
+.landing-dot--active {
+  width: 27px;
+  background: #276e56;
+}
+
+.landing-control {
+  display: flex;
+  height: 36px;
+  width: 36px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(58, 84, 69, 0.14);
+  border-radius: 9999px;
+  color: #35584a;
+  background: rgba(255, 255, 255, 0.7);
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.landing-control:hover {
+  background: #fff;
+  transform: translateY(-1px);
+}
+
+.landing-story__orb {
+  background: radial-gradient(circle, rgba(81, 148, 117, 0.28), rgba(72, 131, 109, 0.08) 56%, transparent 70%);
+  filter: blur(1px);
+}
+
+@keyframes landing-enter {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes landing-float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes landing-glow {
+  from {
+    transform: translate3d(-8px, -6px, 0) scale(0.96);
+  }
+  to {
+    transform: translate3d(12px, 10px, 0) scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}
