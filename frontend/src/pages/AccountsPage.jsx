@@ -13,7 +13,7 @@ import {
   Clock,
   RefreshCw,
 } from 'lucide-react';
-import { formatINR, formatDate, maskAccountNumber } from '../utils/formatters';
+import { formatPaiseToINR, formatDate, maskAccountNumber } from '../utils/formatters';
 import bankingService from '../services/bankingService';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
@@ -215,7 +215,7 @@ export const AccountsPage = () => {
                 <div className="mb-4">
                   <span className="text-xs text-slate-500 font-medium">Available Balance</span>
                   <div className="text-2xl font-bold text-slate-900 tracking-tight">
-                    {formatINR(acc.balance_paise)}
+                    {formatPaiseToINR(acc.balance_paise)}
                   </div>
                 </div>
 
@@ -349,11 +349,11 @@ export const AccountsPage = () => {
                           </td>
                           <td className="py-3.5 px-4 text-right font-bold text-xs whitespace-nowrap">
                             <span className={isDeposit ? 'text-emerald-600' : 'text-slate-900'}>
-                              {isDeposit ? '+' : '-'} {formatINR(tx.amount_paise)}
+                              {isDeposit ? '+' : '-'} {formatPaiseToINR(tx.amount_paise)}
                             </span>
                           </td>
                           <td className="py-3.5 px-4 text-right text-xs font-mono text-slate-600 whitespace-nowrap">
-                            {formatINR(tx.balance_after_paise)}
+                            {formatPaiseToINR(tx.balance_after_paise)}
                           </td>
                           <td className="py-3.5 px-4 text-center">
                             <Badge variant={tx.risk_level || 'NORMAL'} size="sm">

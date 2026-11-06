@@ -9,7 +9,7 @@ import {
   Activity,
 } from 'lucide-react';
 import mlService from '../services/mlService';
-import { formatINR, formatDate, maskAccountNumber } from '../utils/formatters';
+import { formatPaiseToINR, formatDate, maskAccountNumber } from '../utils/formatters';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import Alert from '../components/common/Alert';
@@ -243,7 +243,7 @@ export const FraudMonitoringPage = () => {
               >
                 {accounts.map((acc) => (
                   <option key={acc.account_id} value={acc.account_id}>
-                    {acc.account_type} - {maskAccountNumber(acc.account_number)} (Balance: {formatINR(acc.balance_paise)})
+                    {acc.account_type} - {maskAccountNumber(acc.account_number)} (Balance: {formatPaiseToINR(acc.balance_paise)})
                   </option>
                 ))}
               </select>
@@ -390,7 +390,7 @@ export const FraudMonitoringPage = () => {
                         {item.type} • {formatDate(item.timestamp)}
                       </span>
                       <span className="text-xs font-bold text-slate-900">
-                        {formatINR(item.amount_paise)}
+                        {formatPaiseToINR(item.amount_paise)}
                       </span>
                     </div>
                     {item.risk_explanation && (

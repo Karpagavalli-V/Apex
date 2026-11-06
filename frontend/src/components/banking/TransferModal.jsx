@@ -17,7 +17,9 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
 
   const numAmount = parseFloat(amount) || 0;
   const sourceAccount = accounts.find((a) => a.account_id === selectedAccountId);
-  const currentBalance = sourceAccount?.balance_inr || 0;
+  const currentBalance = sourceAccount?.balance_inr !== undefined
+    ? sourceAccount.balance_inr
+    : (sourceAccount?.balance_paise || 0) / 100;
   const isOverdraft = numAmount > currentBalance;
   const isSameAccount = destinationAccount.trim() === sourceAccount?.account_number;
 
@@ -99,16 +101,36 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
             >
               {accounts.map((acc) => (
                 <option key={acc.account_id} value={acc.account_id}>
-                  {acc.account_type} ({acc.account_number}) — Balance: {formatINR(acc.balance_inr)}
+                  {acc.account_type} ({acc.account_number}) — Balance: {formatINR(acc.balance_inr !== undefined ? acc.balance_inr : (acc.balance_paise || 0) / 100)}
                 </option>
               ))}
             </select>
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5">
-              Recipient Account Number (12 Digits)
-            </label>
+            <div className="flex justify-between items-center mb-1.5">
+              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                Recipient Account Number (12 Digits)
+              </label>
+              {accounts.filter((a) => a.account_id !== selectedAccountId).length > 0 && (
+                <select
+                  onChange={(e) => {
+                    if (e.target.value) setDestinationAccount(e.target.value);
+                  }}
+                  value=""
+                  className="text-xs bg-slate-100 border border-slate-200 text-slate-700 rounded-md px-1.5 py-0.5 focus:outline-none cursor-pointer hover:bg-slate-200"
+                >
+                  <option value="">Or your other account...</option>
+                  {accounts
+                    .filter((a) => a.account_id !== selectedAccountId)
+                    .map((a) => (
+                      <option key={a.account_id} value={a.account_number}>
+                        {a.account_type} ({a.account_number})
+                      </option>
+                    ))}
+                </select>
+              )}
+            </div>
             <input
               type="text"
               maxLength={12}

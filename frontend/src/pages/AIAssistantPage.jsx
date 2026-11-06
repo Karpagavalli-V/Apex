@@ -14,7 +14,7 @@ import {
   Clock,
 } from 'lucide-react';
 import aiService from '../services/aiService';
-import { formatINR, formatDate } from '../utils/formatters';
+import { formatPaiseToINR, formatDate } from '../utils/formatters';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import Alert from '../components/common/Alert';
@@ -411,7 +411,7 @@ export const AIAssistantPage = () => {
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
                   <span className="text-xs font-semibold text-slate-500 uppercase">Total Inflows</span>
                   <div className="text-xl font-bold text-emerald-600">
-                    {formatINR(summaryMetrics.total_deposits_paise || (summaryMetrics.total_deposits_inr * 100) || 0)}
+                    {formatPaiseToINR(summaryMetrics.total_deposits_paise || (summaryMetrics.total_deposits_inr * 100) || 0)}
                   </div>
                   <span className="text-[11px] text-slate-400">
                     {summaryMetrics.deposit_count || 0} deposits
@@ -420,7 +420,7 @@ export const AIAssistantPage = () => {
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
                   <span className="text-xs font-semibold text-slate-500 uppercase">Withdrawals</span>
                   <div className="text-xl font-bold text-rose-600">
-                    {formatINR(summaryMetrics.total_withdrawals_paise || (summaryMetrics.total_withdrawals_inr * 100) || 0)}
+                    {formatPaiseToINR(summaryMetrics.total_withdrawals_paise || (summaryMetrics.total_withdrawals_inr * 100) || 0)}
                   </div>
                   <span className="text-[11px] text-slate-400">
                     {summaryMetrics.withdrawal_count || 0} withdrawals
@@ -429,7 +429,7 @@ export const AIAssistantPage = () => {
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
                   <span className="text-xs font-semibold text-slate-500 uppercase">Transfers Sent</span>
                   <div className="text-xl font-bold text-indigo-600">
-                    {formatINR(summaryMetrics.total_transfers_paise || (summaryMetrics.total_transfers_inr * 100) || 0)}
+                    {formatPaiseToINR(summaryMetrics.total_transfers_paise || (summaryMetrics.total_transfers_inr * 100) || 0)}
                   </div>
                   <span className="text-[11px] text-slate-400">
                     {summaryMetrics.transfer_count || 0} transfers
@@ -438,7 +438,7 @@ export const AIAssistantPage = () => {
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
                   <span className="text-xs font-semibold text-slate-500 uppercase">Net Monthly Delta</span>
                   <div className="text-xl font-bold text-slate-900">
-                    {formatINR(summaryMetrics.net_cash_flow_paise || (summaryMetrics.net_cash_flow_inr * 100) || 0)}
+                    {formatPaiseToINR(summaryMetrics.net_cash_flow_paise || (summaryMetrics.net_cash_flow_inr * 100) || 0)}
                   </div>
                   <Badge variant={summaryContent?.cash_flow_health || summaryMetrics.cash_flow_health || 'BALANCED'} size="sm">
                     {summaryContent?.cash_flow_health || summaryMetrics.cash_flow_health || 'BALANCED'}
@@ -528,7 +528,7 @@ export const AIAssistantPage = () => {
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
                   <span className="text-xs font-semibold text-slate-500 uppercase">Total Outflows</span>
                   <div className="text-xl font-bold text-rose-600">
-                    {formatINR(spendingMetrics.total_spent_paise || (spendingMetrics.total_outflow_inr * 100) || 0)}
+                    {formatPaiseToINR(spendingMetrics.total_spent_paise || (spendingMetrics.total_outflow_inr * 100) || 0)}
                   </div>
                   <span className="text-[11px] text-slate-400">
                     {spendingMetrics.transaction_count || 0} debit transactions
@@ -537,7 +537,7 @@ export const AIAssistantPage = () => {
                 <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-1">
                   <span className="text-xs font-semibold text-slate-500 uppercase">Daily Burn Velocity</span>
                   <div className="text-xl font-bold text-slate-900">
-                    {formatINR(spendingMetrics.daily_spending_velocity_paise || (spendingMetrics.daily_velocity_inr * 100) || 0)}
+                    {formatPaiseToINR(spendingMetrics.daily_spending_velocity_paise || (spendingMetrics.daily_velocity_inr * 100) || 0)}
                   </div>
                   <span className="text-[11px] text-slate-400">Per day average</span>
                 </div>
@@ -602,7 +602,7 @@ export const AIAssistantPage = () => {
                         </div>
                         <div className="text-right">
                           <span className="font-bold text-sm text-rose-600">
-                            {formatINR(tx.amount_paise || (tx.amount_inr * 100) || 0)}
+                            {formatPaiseToINR(tx.amount_paise || (tx.amount_inr * 100) || 0)}
                           </span>
                           <Badge variant={tx.risk_level || 'NORMAL'} size="sm" className="ml-2">
                             {tx.risk_level || 'NORMAL'}
@@ -649,13 +649,13 @@ export const AIAssistantPage = () => {
                   <div>
                     <span className="text-xs text-slate-300 block">Target Emergency Fund (3 Mo)</span>
                     <span className="text-2xl font-bold text-white">
-                      {formatINR(savingsMetrics.target_emergency_fund_paise || (savingsMetrics.emergency_fund_target_inr * 100) || 0)}
+                      {formatPaiseToINR(savingsMetrics.target_emergency_fund_paise || (savingsMetrics.emergency_fund_target_inr * 100) || 0)}
                     </span>
                   </div>
                   <div>
                     <span className="text-xs text-slate-300 block">Recommended Monthly Savings</span>
                     <span className="text-2xl font-bold text-emerald-400">
-                      {formatINR(savingsMetrics.recommended_monthly_savings_paise || (savingsSuggestions?.recommended_monthly_savings_inr * 100) || 0)}
+                      {formatPaiseToINR(savingsMetrics.recommended_monthly_savings_paise || (savingsSuggestions?.recommended_monthly_savings_inr * 100) || 0)}
                     </span>
                   </div>
                   <div>

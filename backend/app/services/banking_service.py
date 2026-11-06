@@ -611,6 +611,7 @@ class BankingService:
 
             result = {
                 "transaction": Transaction.serialize(debit_tx),
+                "account": Account.serialize(updated_source),
                 "source_account": Account.serialize(updated_source),
                 "target_account_number": target_account["account_number"]
             }

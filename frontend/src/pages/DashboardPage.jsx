@@ -28,7 +28,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import transactionService from '../services/transactionService';
 import aiService from '../services/aiService';
-import { formatINR, formatDate, maskAccountNumber } from '../utils/formatters';
+import { formatPaiseToINR, formatDate, maskAccountNumber } from '../utils/formatters';
 import StatCard from '../components/common/StatCard';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
@@ -190,7 +190,7 @@ export const DashboardPage = () => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard
           title="Total Liquidity"
-          value={formatINR(totalBalancePaise)}
+          value={formatPaiseToINR(totalBalancePaise)}
           subtitle={`${accounts.length} active account${accounts.length === 1 ? '' : 's'}`}
           icon={Wallet}
           accentColor="indigo"
@@ -198,7 +198,7 @@ export const DashboardPage = () => {
         />
         <StatCard
           title="Monthly Inflows"
-          value={formatINR(currentMonthMetrics?.total_deposits_paise || 0)}
+          value={formatPaiseToINR(currentMonthMetrics?.total_deposits_paise || 0)}
           subtitle="Total verified deposits"
           icon={TrendingUp}
           accentColor="emerald"
@@ -206,7 +206,7 @@ export const DashboardPage = () => {
         />
         <StatCard
           title="Monthly Outflows"
-          value={formatINR((currentMonthMetrics?.total_withdrawals_paise || 0) + (currentMonthMetrics?.total_transfers_paise || 0))}
+          value={formatPaiseToINR((currentMonthMetrics?.total_withdrawals_paise || 0) + (currentMonthMetrics?.total_transfers_paise || 0))}
           subtitle="Withdrawals & Transfers"
           icon={TrendingDown}
           accentColor="rose"
@@ -214,7 +214,7 @@ export const DashboardPage = () => {
         />
         <StatCard
           title="Net Cash Flow"
-          value={formatINR(currentMonthMetrics?.net_cash_flow_paise || 0)}
+          value={formatPaiseToINR(currentMonthMetrics?.net_cash_flow_paise || 0)}
           subtitle={
             currentMonthMetrics?.cash_flow_health
               ? `Health: ${currentMonthMetrics.cash_flow_health}`
@@ -276,7 +276,7 @@ export const DashboardPage = () => {
                     <div>
                       <p className="text-xs text-slate-500 font-medium">Available Balance</p>
                       <p className="text-lg font-bold text-slate-900">
-                        {formatINR(account.balance_paise)}
+                        {formatPaiseToINR(account.balance_paise)}
                       </p>
                     </div>
                     <div className="flex items-center gap-1.5">
@@ -456,11 +456,11 @@ export const DashboardPage = () => {
                       </td>
                       <td className="py-3.5 px-4 text-right font-bold text-xs whitespace-nowrap">
                         <span className={isDeposit ? 'text-emerald-600' : 'text-slate-900'}>
-                          {isDeposit ? '+' : '-'} {formatINR(tx.amount_paise)}
+                          {isDeposit ? '+' : '-'} {formatPaiseToINR(tx.amount_paise)}
                         </span>
                       </td>
                       <td className="py-3.5 px-4 text-right text-xs font-mono text-slate-600 whitespace-nowrap">
-                        {formatINR(tx.balance_after_paise)}
+                        {formatPaiseToINR(tx.balance_after_paise)}
                       </td>
                       <td className="py-3.5 px-4 text-center">
                         <Badge variant={tx.risk_level || 'NORMAL'} size="sm">
@@ -515,11 +515,11 @@ export const DashboardPage = () => {
             <div className="space-y-2">
               <div className="flex justify-between items-baseline py-1 border-b border-slate-100">
                 <span className="text-slate-600">Amount</span>
-                <span className="text-base font-bold text-slate-900">{formatINR(selectedTx.amount_paise)}</span>
+                <span className="text-base font-bold text-slate-900">{formatPaiseToINR(selectedTx.amount_paise)}</span>
               </div>
               <div className="flex justify-between items-baseline py-1 border-b border-slate-100">
                 <span className="text-slate-600">Balance After</span>
-                <span className="font-mono font-medium text-slate-900">{formatINR(selectedTx.balance_after_paise)}</span>
+                <span className="font-mono font-medium text-slate-900">{formatPaiseToINR(selectedTx.balance_after_paise)}</span>
               </div>
               <div className="flex justify-between items-baseline py-1 border-b border-slate-100">
                 <span className="text-slate-600">Description</span>

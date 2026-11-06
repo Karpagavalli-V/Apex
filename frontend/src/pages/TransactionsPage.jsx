@@ -12,7 +12,7 @@ import {
   RefreshCw,
 } from 'lucide-react';
 import transactionService from '../services/transactionService';
-import { formatINR, formatDate } from '../utils/formatters';
+import { formatPaiseToINR, formatDate } from '../utils/formatters';
 import Badge from '../components/common/Badge';
 import Button from '../components/common/Button';
 import EmptyState from '../components/common/EmptyState';
@@ -227,11 +227,11 @@ export const TransactionsPage = () => {
                         </td>
                         <td className="py-3.5 px-4 text-right font-bold text-xs whitespace-nowrap">
                           <span className={isDeposit ? 'text-emerald-600' : 'text-slate-900'}>
-                            {isDeposit ? '+' : '-'} {formatINR(tx.amount_paise)}
+                            {isDeposit ? '+' : '-'} {formatPaiseToINR(tx.amount_paise)}
                           </span>
                         </td>
                         <td className="py-3.5 px-4 text-right text-xs font-mono text-slate-600 whitespace-nowrap">
-                          {formatINR(tx.balance_after_paise)}
+                          {formatPaiseToINR(tx.balance_after_paise)}
                         </td>
                         <td className="py-3.5 px-4 text-center">
                           <Badge variant={tx.risk_level || 'NORMAL'} size="sm">
@@ -317,11 +317,11 @@ export const TransactionsPage = () => {
             <div className="space-y-2">
               <div className="flex justify-between items-baseline py-1 border-b border-slate-100">
                 <span className="text-slate-600">Amount</span>
-                <span className="text-base font-bold text-slate-900">{formatINR(selectedTx.amount_paise)}</span>
+                <span className="text-base font-bold text-slate-900">{formatPaiseToINR(selectedTx.amount_paise)}</span>
               </div>
               <div className="flex justify-between items-baseline py-1 border-b border-slate-100">
                 <span className="text-slate-600">Balance After</span>
-                <span className="font-mono font-medium text-slate-900">{formatINR(selectedTx.balance_after_paise)}</span>
+                <span className="font-mono font-medium text-slate-900">{formatPaiseToINR(selectedTx.balance_after_paise)}</span>
               </div>
               <div className="flex justify-between items-baseline py-1 border-b border-slate-100">
                 <span className="text-slate-600">Memo / Description</span>

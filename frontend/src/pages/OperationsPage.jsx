@@ -8,7 +8,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import bankingService from '../services/bankingService';
-import { formatINR, maskAccountNumber } from '../utils/formatters';
+import { formatPaiseToINR, maskAccountNumber } from '../utils/formatters';
 import Button from '../components/common/Button';
 import Alert from '../components/common/Alert';
 import Badge from '../components/common/Badge';
@@ -53,7 +53,7 @@ export const OperationsPage = () => {
     if (activeTab === 'withdraw' || activeTab === 'transfer') {
       if (amountPaise > currentAccount.balance_paise) {
         setError(
-          `Insufficient funds. Available balance is ${formatINR(currentAccount.balance_paise)}.`
+          `Insufficient funds. Available balance is ${formatPaiseToINR(currentAccount.balance_paise)}.`
         );
         return false;
       }
@@ -206,13 +206,13 @@ export const OperationsPage = () => {
             <div>
               <span className="text-slate-500 block">Amount Processed</span>
               <span className="font-bold text-slate-900 text-sm">
-                {formatINR(lastReceipt.transaction?.amount_paise || (numericAmount * 100))}
+                {formatPaiseToINR(lastReceipt.transaction?.amount_paise || (numericAmount * 100))}
               </span>
             </div>
             <div>
               <span className="text-slate-500 block">Updated Balance</span>
               <span className="font-bold text-slate-900 text-sm">
-                {formatINR(lastReceipt.account?.balance_paise || lastReceipt.balance_paise || 0)}
+                {formatPaiseToINR(lastReceipt.account?.balance_paise || lastReceipt.source_account?.balance_paise || lastReceipt.balance_paise || 0)}
               </span>
             </div>
             <div>
@@ -272,7 +272,7 @@ export const OperationsPage = () => {
                           {maskAccountNumber(acc.account_number)}
                         </span>
                         <span className="font-bold text-sm text-slate-900">
-                          {formatINR(acc.balance_paise)}
+                          {formatPaiseToINR(acc.balance_paise)}
                         </span>
                       </div>
                     </div>
@@ -285,9 +285,29 @@ export const OperationsPage = () => {
           {/* Transfer Destination Field (Only for Transfer tab) */}
           {activeTab === 'transfer' && (
             <div>
-              <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
-                Recipient 12-Digit Account Number
-              </label>
+              <div className="flex justify-between items-center mb-2">
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                  Recipient 12-Digit Account Number
+                </label>
+                {accounts.filter((a) => a.account_id !== selectedAccountId).length > 0 && (
+                  <select
+                    onChange={(e) => {
+                      if (e.target.value) setDestinationAccount(e.target.value);
+                    }}
+                    value=""
+                    className="text-xs bg-slate-100 border border-slate-200 text-slate-700 rounded-lg px-2 py-1 focus:outline-none cursor-pointer hover:bg-slate-200"
+                  >
+                    <option value="">Or pick another account of yours...</option>
+                    {accounts
+                      .filter((a) => a.account_id !== selectedAccountId)
+                      .map((a) => (
+                        <option key={a.account_id} value={a.account_number}>
+                          {a.account_type} ({a.account_number})
+                        </option>
+                      ))}
+                  </select>
+                )}
+              </div>
               <input
                 type="text"
                 maxLength={12}
@@ -314,7 +334,7 @@ export const OperationsPage = () => {
                   onClick={() => setAmount((currentAccount.balance_paise / 100).toFixed(2))}
                   className="text-xs font-semibold text-brand-600 hover:text-brand-700"
                 >
-                  Use Max Available ({formatINR(currentAccount.balance_paise)})
+                  Use Max Available ({formatPaiseToINR(currentAccount.balance_paise)})
                 </button>
               )}
             </div>
@@ -409,14 +429,14 @@ export const OperationsPage = () => {
               )}
               <div className="flex justify-between items-center text-xs text-slate-500">
                 <span>Amount</span>
-                <span className="text-base font-bold text-slate-900">{formatINR(amountPaise)}</span>
+                <span className="text-base font-bold text-slate-900">{formatPaiseToINR(amountPaise)}</span>
               </div>
               <div className="flex justify-between items-center text-xs text-slate-500">
                 <span>Balance After (Estimated)</span>
                 <span className="font-mono font-medium text-slate-900">
                   {activeTab === 'deposit'
-                    ? formatINR(currentAccount.balance_paise + amountPaise)
-                    : formatINR(currentAccount.balance_paise - amountPaise)}
+                    ? formatPaiseToINR(currentAccount.balance_paise + amountPaise)
+                    : formatPaiseToINR(currentAccount.balance_paise - amountPaise)}
                 </span>
               </div>
             </div>

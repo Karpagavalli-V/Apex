@@ -16,7 +16,9 @@ export const WithdrawModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
 
   const numAmount = parseFloat(amount) || 0;
   const selectedAccount = accounts.find((a) => a.account_id === selectedAccountId);
-  const currentBalance = selectedAccount?.balance_inr || 0;
+  const currentBalance = selectedAccount?.balance_inr !== undefined
+    ? selectedAccount.balance_inr
+    : (selectedAccount?.balance_paise || 0) / 100;
   const isOverdraft = numAmount > currentBalance;
 
   const handleSubmit = (e) => {
@@ -85,7 +87,7 @@ export const WithdrawModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
             >
               {accounts.map((acc) => (
                 <option key={acc.account_id} value={acc.account_id}>
-                  {acc.account_type} ({acc.account_number}) — Balance: {formatINR(acc.balance_inr)}
+                  {acc.account_type} ({acc.account_number}) — Balance: {formatINR(acc.balance_inr !== undefined ? acc.balance_inr : (acc.balance_paise || 0) / 100)}
                 </option>
               ))}
             </select>

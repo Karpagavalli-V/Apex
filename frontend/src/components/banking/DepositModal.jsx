@@ -78,7 +78,7 @@ export const DepositModal = ({ isOpen, onClose, accounts = [], onSuccess }) => {
             >
               {accounts.map((acc) => (
                 <option key={acc.account_id} value={acc.account_id}>
-                  {acc.account_type} ({acc.account_number}) — Balance: {formatINR(acc.balance_inr)}
+                  {acc.account_type} ({acc.account_number}) — Balance: {formatINR(acc.balance_inr !== undefined ? acc.balance_inr : (acc.balance_paise || 0) / 100)}
                 </option>
               ))}
             </select>
@@ -146,7 +146,7 @@ export const DepositModal = ({ isOpen, onClose, accounts = [], onSuccess }) => {
             <div className="flex justify-between text-slate-600">
               <span>New Balance:</span>
               <span className="font-semibold text-slate-900">
-                {formatINR((selectedAccount?.balance_inr || 0) + numAmount)}
+                {formatINR((selectedAccount?.balance_inr !== undefined ? selectedAccount.balance_inr : (selectedAccount?.balance_paise || 0) / 100) + numAmount)}
               </span>
             </div>
             {description && (
