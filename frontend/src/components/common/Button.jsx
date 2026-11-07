@@ -22,6 +22,7 @@ export const Button = ({
     ghost: 'text-slate-600 hover:text-slate-900 hover:bg-slate-100 focus:ring-slate-400',
     danger: 'bg-rose-600 hover:bg-rose-700 text-white shadow-sm focus:ring-rose-500',
     success: 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm focus:ring-emerald-500',
+    glass: 'bg-white/10 hover:bg-white/20 text-white border border-white/20 hover:border-white/35 shadow-sm backdrop-blur-sm focus:ring-white/40',
   };
 
   const sizes = {

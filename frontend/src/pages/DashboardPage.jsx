@@ -157,20 +157,18 @@ export const DashboardPage = () => {
               Deposit
             </Button>
             <Button
-              variant="outline"
+              variant="glass"
               size="sm"
               icon={ArrowUpRight}
               onClick={openWithdraw}
-              className="border-white/20 text-white hover:bg-white/10 hover:border-white/40"
             >
               Withdraw
             </Button>
             <Button
-              variant="outline"
+              variant="glass"
               size="sm"
               icon={Repeat}
               onClick={openTransfer}
-              className="border-white/20 text-white hover:bg-white/10 hover:border-white/40"
             >
               Transfer
             </Button>
