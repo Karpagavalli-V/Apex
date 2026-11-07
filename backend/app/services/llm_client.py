@@ -47,7 +47,7 @@ class LLMClient:
         if not api_key:
             raise ValueError("GEMINI_API_KEY is not configured or empty.")
 
-        model = current_app.config.get("GEMINI_MODEL", "gemini-1.5-flash")
+        model = current_app.config.get("GEMINI_MODEL", "gemini-2.5-flash")
         url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={api_key}"
 
         sanitized_prompt = cls.sanitize_prompt(prompt)

@@ -52,7 +52,7 @@ flowchart TB
     end
 
     subgraph ExternalIntelligence["External AI Tier"]
-        GeminiAPI["Google Gemini 1.5 Flash API"]
+        GeminiAPI["Google Gemini 2.5 Flash API"]
         RuleFallback["Deterministic Rule-Based Fallback"]
     end
 
@@ -239,7 +239,7 @@ flowchart TD
     Guardrail -->|Legitimate Inquiry| ContextBuilder["Assemble User Context (Mask Account Numbers)"]
     
     ContextBuilder --> LLMCheck{"LLM API Key Configured?"}
-    LLMCheck -->|Yes| GeminiCall["Call Gemini 1.5 Flash API"]
+    LLMCheck -->|Yes| GeminiCall["Call Gemini 2.5 Flash API"]
     GeminiCall -->|Success| FormattedReply["Deliver AI Financial Analysis"]
     GeminiCall -->|Error / Timeout| Fallback
     LLMCheck -->|No| Fallback["Execute Deterministic Rule-Based Analysis Engine"]
