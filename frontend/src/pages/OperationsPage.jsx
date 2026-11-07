@@ -14,6 +14,14 @@ import Alert from '../components/common/Alert';
 import Badge from '../components/common/Badge';
 import Modal from '../components/common/Modal';
 
+const DEMO_BENEFICIARIES = [
+  { name: 'Charu (Savings)', number: '100466777930' },
+  { name: 'Charu (Checking)', number: '100777536164' },
+  { name: 'Maha', number: '100247052120' },
+  { name: 'Suruthika', number: '100684224129' },
+  { name: 'Divya', number: '100735941819' },
+];
+
 export const OperationsPage = () => {
   const { accounts, loadingAccounts, refreshAccounts } = useOutletContext();
 
@@ -319,6 +327,32 @@ export const OperationsPage = () => {
               <p className="text-xs text-slate-400 mt-1">
                 Must be an existing 12-digit Apex Bank account number.
               </p>
+
+              {/* Quick Demo Beneficiaries */}
+              <div className="mt-2.5">
+                <div className="text-[11px] text-slate-500 font-medium mb-1.5 flex items-center justify-between">
+                  <span>Quick Select Recipient (Testing):</span>
+                  <span className="text-[10px] text-slate-400">Full 12-digit account</span>
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {DEMO_BENEFICIARIES
+                    .filter((b) => b.number !== currentAccount?.account_number)
+                    .map((b) => (
+                      <button
+                        key={b.number}
+                        type="button"
+                        onClick={() => setDestinationAccount(b.number)}
+                        className={`text-[11px] px-2.5 py-1 rounded-full border transition-all ${
+                          destinationAccount === b.number
+                            ? 'bg-brand-50 border-brand-500 text-brand-700 font-semibold shadow-xs'
+                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
+                        }`}
+                      >
+                        {b.name} ({b.number.slice(-4)})
+                      </button>
+                    ))}
+                </div>
+              </div>
             </div>
           )}
 
