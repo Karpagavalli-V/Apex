@@ -92,6 +92,8 @@ class MLService:
         """
         if tx_time is None:
             tx_time = datetime.now(timezone.utc)
+        elif tx_time.tzinfo is None:
+            tx_time = tx_time.replace(tzinfo=timezone.utc)
 
         db = mongo_manager.get_db()
         amount_inr = round(amount_paise / 100.0, 2)
