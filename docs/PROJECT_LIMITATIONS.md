@@ -31,7 +31,7 @@ Apex Bank is engineered to enterprise software standards while serving as an adv
 ## 3. Generative AI Financial Assistant Constraints
 
 ### 3.1 External API Key Prerequisite
-- **Constraint:** Calling cloud-hosted Large Language Models (Google Gemini 2.5 Flash or OpenAI GPT-4o) requires active cloud API credentials (`GEMINI_API_KEY` or `OPENAI_API_KEY`).
+- **Constraint:** Calling cloud-hosted Large Language Models (Google Gemini 3.8 Flash or OpenAI GPT-4o) requires active cloud API credentials (`GEMINI_API_KEY` or `OPENAI_API_KEY`).
 - **Implementation:** Apex Bank implements a transparent dual-engine architecture:
   - If a valid key is configured, contextual prompts are routed to Google Gemini.
   - If no key is configured, network connectivity is blocked, or the API times out, the system automatically engages an internal deterministic rule-based analysis engine.

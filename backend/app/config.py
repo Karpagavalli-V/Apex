@@ -28,7 +28,7 @@ class Config:
     LLM_PROVIDER = os.getenv("LLM_PROVIDER", "gemini").lower()
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
-    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-3.8-flash")
     OPENAI_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     AI_RATE_LIMIT_PER_MINUTE = int(os.getenv("AI_RATE_LIMIT_PER_MINUTE", "30"))
     AI_FALLBACK_ON_ERROR = os.getenv("AI_FALLBACK_ON_ERROR", "true").lower() in ("true", "1", "yes")

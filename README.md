@@ -76,7 +76,7 @@ flowchart TB
     subgraph DataLayer["Persistence & Artifacts"]
         MongoRS[("MongoDB Replica Set rs0 (127.0.0.1:27017)")]
         MLModel["Joblib Classifier & Scaler Artifacts"]
-        GeminiAPI["Google Gemini 2.5 Flash API / Deterministic Fallback"]
+        GeminiAPI["Google Gemini 3.8 Flash API / Deterministic Fallback"]
     end
 
     APIClient -->|HTTPS / JSON| AppFactory
@@ -99,7 +99,7 @@ flowchart TB
 | **Database** | MongoDB Enterprise | 8.0 (Replica Set `rs0`) | Document schema flexibility with native multi-document ACID transactions. |
 | **Authentication** | PyJWT / Bcrypt | 2.10.1 / 4.3.0 | Industry-standard work factor 12 hashing and stateless signed tokens. |
 | **Machine Learning**| Scikit-learn / Pandas | 1.6 / 2.2 | Optimized ensemble classification with Random Forest and robust feature pipelines. |
-| **Generative AI** | Gemini 2.5 Flash | 2.5-flash | High-throughput, low-latency financial narrative synthesis with deterministic fallback. |
+| **Generative AI** | Gemini 3.8 Flash | 3.8-flash | High-throughput, low-latency financial narrative synthesis with deterministic fallback. |
 | **Frontend** | React / Vite | 19.3.1 / 8.3.5 | Modern component architecture with near-instant hot module replacement and tree-shaking. |
 | **Styling** | Tailwind CSS | 3.4.19 | Utility-first responsive design system with custom financial palette. |
 | **Data Viz** | Recharts | 3.10.1 | Composable, accessible SVG charting for financial trends and cash flows. |
@@ -210,7 +210,7 @@ Evaluated on an untouched holdout test set of 2,000 transactions (stratified 80/
 ## 8. Generative AI Financial Assistant
 
 > [!IMPORTANT]
-> **LLM Credentials Disclosure:** Live external GenAI features (via Google Gemini 2.5 Flash or OpenAI) require active API keys configured in `backend/.env` (`GEMINI_API_KEY` or `OPENAI_API_KEY`). If unconfigured or network-isolated, Apex Bank automatically falls back to an internal, deterministic rule-based financial analysis and chatbot engine. All submission verification tests and demonstration steps test and pass against this deterministic engine without external dependency failures.
+> **LLM Credentials Disclosure:** Live external GenAI features (via Google Gemini 3.8 Flash or OpenAI) require active API keys configured in `backend/.env` (`GEMINI_API_KEY` or `OPENAI_API_KEY`). If unconfigured or network-isolated, Apex Bank automatically falls back to an internal, deterministic rule-based financial analysis and chatbot engine. All submission verification tests and demonstration steps test and pass against this deterministic engine without external dependency failures.
 
 ```mermaid
 flowchart TD
@@ -224,7 +224,7 @@ flowchart TD
     Guardrail -->|Legitimate Inquiry| Context["Assemble Masked Financial Context"]
     
     Context --> Provider{"LLM Key Configured?"}
-    Provider -->|Yes| Gemini["Call Gemini 2.5 Flash API"]
+    Provider -->|Yes| Gemini["Call Gemini 3.8 Flash API"]
     Gemini -->|Success| Out["Deliver AI Response"]
     Gemini -->|Error / Timeout| Fallback
     Provider -->|No| Fallback["Execute Deterministic Rule-Based Analysis Engine"]
