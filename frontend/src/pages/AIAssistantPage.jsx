@@ -156,18 +156,54 @@ export const AIAssistantPage = () => {
     'How can I improve my savings rate?',
   ];
 
-  // Normalized tab data accessors
-  const summaryMetrics = summaryData?.data?.metrics || summaryData?.data?.current_month;
-  const summaryContent = summaryData?.data?.summary;
-  const summaryObservations = summaryContent?.key_observations || summaryData?.data?.observations || [];
+  // Normalized tab data accessors (supports both nested data and direct properties)
+  const summaryMetrics =
+    summaryData?.data?.metrics ||
+    summaryData?.metrics ||
+    summaryData?.data?.current_month ||
+    summaryData?.current_month;
 
-  const spendingMetrics = spendingData?.data?.metrics || spendingData?.data;
-  const spendingAnalysis = spendingData?.data?.analysis;
-  const spendingOutliers = spendingMetrics?.outliers || spendingData?.data?.high_spending_transactions || [];
+  const summaryContent =
+    summaryData?.data?.summary ||
+    summaryData?.summary;
 
-  const savingsMetrics = savingsData?.data?.metrics || savingsData?.data;
-  const savingsSuggestions = savingsData?.data?.suggestions;
-  const savingsRecs = savingsSuggestions?.practical_recommendations || savingsData?.data?.recommendations || [];
+  const summaryObservations =
+    summaryContent?.key_observations ||
+    summaryData?.data?.observations ||
+    summaryData?.observations ||
+    [];
+
+  const spendingMetrics =
+    spendingData?.data?.metrics ||
+    spendingData?.metrics ||
+    spendingData?.data ||
+    spendingData;
+
+  const spendingAnalysis =
+    spendingData?.data?.analysis ||
+    spendingData?.analysis;
+
+  const spendingOutliers =
+    spendingMetrics?.outliers ||
+    spendingData?.data?.high_spending_transactions ||
+    spendingData?.high_spending_transactions ||
+    [];
+
+  const savingsMetrics =
+    savingsData?.data?.metrics ||
+    savingsData?.metrics ||
+    savingsData?.data ||
+    savingsData;
+
+  const savingsSuggestions =
+    savingsData?.data?.suggestions ||
+    savingsData?.suggestions;
+
+  const savingsRecs =
+    savingsSuggestions?.practical_recommendations ||
+    savingsData?.data?.recommendations ||
+    savingsData?.recommendations ||
+    [];
 
   return (
     <div className="space-y-6">
@@ -180,7 +216,7 @@ export const AIAssistantPage = () => {
             </h1>
             <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-indigo-100 text-indigo-800 flex items-center gap-1">
               <Sparkles className="w-3 h-3 text-indigo-600" />
-              {providerInfo?.provider === 'gemini' ? 'Gemini 2.5 Active' : 'Hybrid AI Core'}
+              {providerInfo?.model ? `${providerInfo.model} Active` : (providerInfo?.provider === 'gemini' ? 'Gemini Active' : 'Hybrid AI Core')}
             </span>
           </div>
           <p className="text-sm text-slate-500">

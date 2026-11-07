@@ -189,9 +189,19 @@ def seed_users_and_history():
         acc["balance_paise"] = new_bal
         return tx_doc
 
+    reset_mode = "--reset" in sys.argv or "--refresh" in sys.argv
+    if reset_mode:
+        print("\n--- RESET REQUESTED: Purging previous demo transactions ---")
+        demo_user_ids = list(user_map.values())
+        db.transactions.delete_many({"user_id": {"$in": demo_user_ids}})
+        for acc in account_map.values():
+            acc["balance_paise"] = 0
+            db.accounts.update_one({"account_id": acc["account_id"]}, {"$set": {"balance_paise": 0}})
+        print("[RESET] Cleaned transactions and reset account balances.")
+
     # Check if charu already has transactions
     charu_tx_count = db.transactions.count_documents({"user_id": charu_user_id})
-    if charu_tx_count < 3:
+    if charu_tx_count < 3 or reset_mode:
         print("Adding realistic transaction streams...")
         # 1. Charu's activity
         execute_record("charu_01_savings", charu_user_id, "DEPOSIT", 45000.0, "Monthly Salary Direct Deposit", 28)
@@ -204,6 +214,7 @@ def seed_users_and_history():
         execute_record("charu_01_savings", charu_user_id, "TRANSFER", 5000.0, "Transfer to Checking Reserve", 4, counterparty_key="charu_01_checking")
         execute_record("charu_01_checking", charu_user_id, "DEPOSIT", 5000.0, "Opening Transfer from Savings", 4)
         execute_record("charu_01_savings", charu_user_id, "DEPOSIT", 5000.0, "Repayment from Divya", 2, counterparty_key="divya_04_savings")
+        execute_record("charu_01_savings", charu_user_id, "WITHDRAWAL", 2500.0, "Supermarket & Household Expenses", 1)
 
         # 2. Maha's activity
         maha_id = user_map["maha_02"]
@@ -212,6 +223,7 @@ def seed_users_and_history():
         execute_record("maha_02_savings", maha_id, "WITHDRAWAL", 3800.0, "Broadband and Cloud Subscriptions", 12)
         execute_record("maha_02_savings", maha_id, "TRANSFER", 1500.0, "Book Club Shared Expenses", 8, counterparty_key="suruthika_03_savings")
         execute_record("maha_02_savings", maha_id, "DEPOSIT", 12000.0, "Project Stipend", 3)
+        execute_record("maha_02_savings", maha_id, "WITHDRAWAL", 1500.0, "Mobile & Data Recharge", 1)
 
         # 3. Suruthika's activity
         suru_id = user_map["suruthika_03"]
@@ -219,6 +231,8 @@ def seed_users_and_history():
         execute_record("suruthika_03_savings", suru_id, "DEPOSIT", 1500.0, "Transfer Received from Maha", 8, counterparty_key="maha_02_savings")
         execute_record("suruthika_03_savings", suru_id, "WITHDRAWAL", 2600.0, "Course Books & Online Certifications", 5)
         execute_record("suruthika_03_savings", suru_id, "DEPOSIT", 8000.0, "Research Assistant Honorarium", 2)
+        execute_record("suruthika_03_savings", suru_id, "TRANSFER", 1000.0, "Hostel Mess Advance", 1, counterparty_key="maha_02_savings")
+        execute_record("maha_02_savings", maha_id, "DEPOSIT", 1000.0, "Mess Advance Received from Suruthika", 1, counterparty_key="suruthika_03_savings")
 
         # 4. Divya's activity
         divya_id = user_map["divya_04"]

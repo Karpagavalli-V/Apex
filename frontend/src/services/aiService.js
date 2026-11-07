@@ -1,20 +1,31 @@
 import apiClient from '../api/client';
 
+function normalizeAiResponse(response) {
+  if (!response) return {};
+  const data = response.data || response;
+  return {
+    ...data,
+    data: data,
+    success: response.success ?? true,
+    message: response.message ?? '',
+  };
+}
+
 export const aiService = {
   async getFinancialSummary(month = null) {
     const url = month ? `/ai/financial-summary?month=${month}` : '/ai/financial-summary';
     const response = await apiClient.get(url);
-    return response.data;
+    return normalizeAiResponse(response);
   },
 
   async getSpendingAnalysis(days = 30) {
     const response = await apiClient.get(`/ai/spending-analysis?days=${days}`);
-    return response.data;
+    return normalizeAiResponse(response);
   },
 
   async getSavingsSuggestions() {
     const response = await apiClient.get('/ai/savings-suggestions');
-    return response.data;
+    return normalizeAiResponse(response);
   },
 
   async sendChatMessage({ message, transaction_id = null }) {
@@ -23,12 +34,12 @@ export const aiService = {
       payload.transaction_id = transaction_id;
     }
     const response = await apiClient.post('/ai/chat', payload);
-    return response.data;
+    return normalizeAiResponse(response);
   },
 
   async getProviderInfo() {
     const response = await apiClient.get('/ai/provider-info');
-    return response.data;
+    return normalizeAiResponse(response);
   },
 };
 

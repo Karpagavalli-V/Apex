@@ -94,8 +94,40 @@ export const DashboardPage = () => {
   }, [accounts]);
 
   // Prepare chart data from AI summary or transactions
-  const currentMonthMetrics = aiSummary?.data?.metrics || aiSummary?.data?.current_month;
-  const aiSummaryContent = aiSummary?.data?.summary;
+  const currentMonthMetrics =
+    aiSummary?.data?.metrics ||
+    aiSummary?.metrics ||
+    aiSummary?.data?.current_month ||
+    aiSummary?.current_month;
+
+  const aiSummaryContent =
+    aiSummary?.data?.summary ||
+    aiSummary?.summary;
+
+  // Real-time ledger fallbacks calculated directly from recent transactions
+  const fallbackMonthInflows = useMemo(() => {
+    if (!recentTransactions || recentTransactions.length === 0) return 0;
+    const now = new Date();
+    return recentTransactions
+      .filter((tx) => {
+        if (!tx.timestamp || tx.type !== 'DEPOSIT') return false;
+        const d = new Date(tx.timestamp);
+        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      })
+      .reduce((acc, tx) => acc + (tx.amount_paise || 0), 0);
+  }, [recentTransactions]);
+
+  const fallbackMonthOutflows = useMemo(() => {
+    if (!recentTransactions || recentTransactions.length === 0) return 0;
+    const now = new Date();
+    return recentTransactions
+      .filter((tx) => {
+        if (!tx.timestamp || (tx.type !== 'WITHDRAWAL' && tx.type !== 'TRANSFER')) return false;
+        const d = new Date(tx.timestamp);
+        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+      })
+      .reduce((acc, tx) => acc + (tx.amount_paise || 0), 0);
+  }, [recentTransactions]);
 
   const monthlyData = useMemo(() => {
     if (currentMonthMetrics) {
@@ -116,11 +148,42 @@ export const DashboardPage = () => {
         },
       ];
     }
-    // Fallback: estimate from recent transactions
+    // Fallback: estimate from loaded transactions
+    if (recentTransactions && recentTransactions.length > 0) {
+      const now = new Date();
+      const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+      const thisMonthTxs = recentTransactions.filter((tx) => {
+        if (!tx.timestamp) return false;
+        const txDate = new Date(tx.timestamp);
+        return (
+          txDate.getFullYear() === now.getFullYear() &&
+          txDate.getMonth() === now.getMonth()
+        );
+      });
+
+      const depSum = thisMonthTxs
+        .filter((tx) => tx.type === 'DEPOSIT')
+        .reduce((acc, tx) => acc + (tx.amount_paise || 0), 0) / 100;
+      const wthSum = thisMonthTxs
+        .filter((tx) => tx.type === 'WITHDRAWAL')
+        .reduce((acc, tx) => acc + (tx.amount_paise || 0), 0) / 100;
+      const trfSum = thisMonthTxs
+        .filter((tx) => tx.type === 'TRANSFER')
+        .reduce((acc, tx) => acc + (tx.amount_paise || 0), 0) / 100;
+
+      return [
+        {
+          name: currentMonthStr,
+          Deposits: depSum,
+          Withdrawals: wthSum,
+          Transfers: trfSum,
+        },
+      ];
+    }
     return [
       { name: 'Estimated Flow', Deposits: 0, Withdrawals: 0, Transfers: 0 }
     ];
-  }, [currentMonthMetrics]);
+  }, [currentMonthMetrics, recentTransactions]);
 
   return (
     <div className="space-y-6 sm:space-y-7">
@@ -196,23 +259,29 @@ export const DashboardPage = () => {
         />
         <StatCard
           title="Monthly Inflows"
-          value={formatPaiseToINR(currentMonthMetrics?.total_deposits_paise || 0)}
+          value={formatPaiseToINR(currentMonthMetrics?.total_deposits_paise ?? fallbackMonthInflows)}
           subtitle="Total verified deposits"
           icon={TrendingUp}
           accentColor="emerald"
-          loading={loadingAi}
+          loading={loadingAi && !currentMonthMetrics && fallbackMonthInflows === 0}
         />
         <StatCard
           title="Monthly Outflows"
-          value={formatPaiseToINR((currentMonthMetrics?.total_withdrawals_paise || 0) + (currentMonthMetrics?.total_transfers_paise || 0))}
+          value={formatPaiseToINR(
+            currentMonthMetrics
+              ? (currentMonthMetrics.total_withdrawals_paise || 0) + (currentMonthMetrics.total_transfers_paise || 0)
+              : fallbackMonthOutflows
+          )}
           subtitle="Withdrawals & Transfers"
           icon={TrendingDown}
           accentColor="rose"
-          loading={loadingAi}
+          loading={loadingAi && !currentMonthMetrics && fallbackMonthOutflows === 0}
         />
         <StatCard
           title="Net Cash Flow"
-          value={formatPaiseToINR(currentMonthMetrics?.net_cash_flow_paise || 0)}
+          value={formatPaiseToINR(
+            currentMonthMetrics?.net_cash_flow_paise ?? (fallbackMonthInflows - fallbackMonthOutflows)
+          )}
           subtitle={
             currentMonthMetrics?.cash_flow_health
               ? `Health: ${currentMonthMetrics.cash_flow_health}`
@@ -220,7 +289,7 @@ export const DashboardPage = () => {
           }
           icon={Sparkles}
           accentColor="amber"
-          loading={loadingAi}
+          loading={loadingAi && !currentMonthMetrics && fallbackMonthInflows === 0}
         />
       </div>
 
@@ -363,12 +432,12 @@ export const DashboardPage = () => {
           </div>
 
           {/* AI Narrative Preview */}
-          {(aiSummaryContent?.overview || aiSummary?.data?.executive_overview) && (
+          {(aiSummaryContent?.overview || aiSummary?.data?.executive_overview || aiSummary?.executive_overview) && (
             <div className="mt-4 p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-start gap-3">
               <Sparkles className="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" />
               <div className="text-xs text-slate-700 leading-relaxed">
                 <span className="font-semibold text-slate-900">AI Financial Takeaway: </span>
-                {aiSummaryContent?.overview || aiSummary?.data?.executive_overview}
+                {aiSummaryContent?.overview || aiSummary?.data?.executive_overview || aiSummary?.executive_overview}
               </div>
             </div>
           )}
