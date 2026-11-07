@@ -196,9 +196,19 @@ export const DashboardPage = () => {
         <div className="absolute right-1/3 -bottom-40 w-72 h-72 bg-indigo-400/10 rounded-full blur-3xl pointer-events-none" />
         <div className="relative z-10 flex flex-col xl:flex-row xl:items-center justify-between gap-7">
           <div className="space-y-3 max-w-2xl">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.09] backdrop-blur-md text-[11px] font-semibold tracking-wide text-blue-100 border border-white/[0.12]">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
-              <span>YOUR MONEY, PROTECTED</span>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/[0.09] backdrop-blur-md text-[11px] font-semibold tracking-wide text-blue-100 border border-white/[0.12]">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-300" />
+                <span>YOUR MONEY, PROTECTED</span>
+              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-[11px] font-mono text-emerald-300 font-semibold shadow-xs">
+                Pay ID: {user?.apex_pay_id || (user?.username ? `${user.username.toLowerCase()}@apex` : '')}
+              </span>
+              {user?.phone_number && (
+                <span className="hidden sm:inline-flex items-center px-2.5 py-1 rounded-full bg-white/[0.08] text-[11px] font-mono text-blue-100/80 border border-white/10">
+                  {user.phone_number}
+                </span>
+              )}
             </div>
             <h1 className="text-2xl sm:text-3xl lg:text-[34px] font-bold tracking-tight">
               Welcome back, {user?.full_name?.split(/\s+/)[0] || user?.username || 'there'}

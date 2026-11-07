@@ -1,3 +1,4 @@
+import re
 from datetime import datetime, timezone
 from pymongo import ReturnDocument
 from pymongo.errors import PyMongoError
@@ -496,15 +497,38 @@ class BankingService:
         if not (is_admin or source_account["user_id"] == user_id):
             raise AuthorizationError("You do not have permission to transfer funds from this account")
 
-        # Find target account by account_number or account_id
+        # Find target account by account_number, account_id, Apex Pay ID, phone, username, or email
+        clean_identifier = str(target_account_identifier).strip()
         target_account = db.accounts.find_one({
             "$or": [
-                {"account_number": target_account_identifier},
-                {"account_id": target_account_identifier}
+                {"account_number": clean_identifier},
+                {"account_id": clean_identifier}
             ]
         })
+
         if not target_account:
-            raise NotFoundError("Target account not found")
+            # GPay-style resolution: search for user by apex_pay_id, username, phone_number, or email
+            clean_username = clean_identifier[:-5] if clean_identifier.lower().endswith("@apex") else clean_identifier
+            digits_only = "".join(filter(str.isdigit, clean_identifier))
+
+            user_query = [
+                {"apex_pay_id": {"$regex": f"^{re.escape(clean_identifier)}$", "$options": "i"}},
+                {"username": {"$regex": f"^{re.escape(clean_username)}$", "$options": "i"}},
+                {"email": clean_identifier.lower()}
+            ]
+            if len(digits_only) >= 10:
+                user_query.append({"phone_number": {"$regex": re.escape(digits_only)}})
+
+            target_user = db.users.find_one({"$or": user_query})
+            if target_user:
+                # Find active primary account (prefer SAVINGS, then CHECKING)
+                target_account = db.accounts.find_one(
+                    {"user_id": target_user["user_id"], "status": "ACTIVE"},
+                    sort=[("account_type", -1)]
+                )
+
+        if not target_account:
+            raise NotFoundError("Recipient account, Pay ID, username, or phone number not found")
 
         if source_account["account_id"] == target_account["account_id"]:
             raise ValidationError("Source and destination accounts must be different")

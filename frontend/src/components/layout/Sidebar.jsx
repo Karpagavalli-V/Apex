@@ -107,6 +107,9 @@ export const Sidebar = ({ mobileOpen, setMobileOpen }) => {
                 <p className="text-xs font-semibold text-white truncate leading-tight">
                   {user?.full_name || user?.username}
                 </p>
+                <p className="text-[10px] text-brand-300 font-mono truncate">
+                  {user?.apex_pay_id || (user?.username ? `${user.username.toLowerCase()}@apex` : '')}
+                </p>
                 <div className="flex items-center gap-1.5 mt-0.5">
                   <Badge variant={user?.role} size="sm">
                     {user?.role}

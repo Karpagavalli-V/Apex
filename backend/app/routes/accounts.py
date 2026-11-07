@@ -1,4 +1,6 @@
+import re
 from flask import Blueprint, request, jsonify
+from app.extensions import mongo_manager
 from app.utils.auth_guards import jwt_required, roles_required, get_current_user
 from app.utils.validators import (
     validate_account_creation_payload,
@@ -72,6 +74,85 @@ def list_all_accounts_admin():
     return jsonify({
         "success": True,
         "data": result
+    }), 200
+
+
+@accounts_bp.route("/lookup-beneficiary", methods=["GET"])
+@jwt_required
+def lookup_beneficiary():
+    """
+    GPay-style dynamic search for registered beneficiaries by:
+    - Name (e.g. 'Charu')
+    - Username (e.g. 'charu_01')
+    - Apex Pay ID (e.g. 'charu_01@apex')
+    - Phone number (e.g. '98765' or '+91 98765 01001')
+    - Account number (e.g. '100466777930')
+    Returns list of verified recipient cards with their active account details.
+    """
+    current_user = get_current_user()
+    db = mongo_manager.get_db()
+    q = request.args.get("q", "").strip()
+
+    beneficiaries = []
+
+    if q:
+        clean_q = re.escape(q)
+        digits_only = "".join(filter(str.isdigit, q))
+
+        user_criteria = [
+            {"full_name": {"$regex": clean_q, "$options": "i"}},
+            {"username": {"$regex": clean_q, "$options": "i"}},
+            {"apex_pay_id": {"$regex": clean_q, "$options": "i"}},
+            {"email": {"$regex": clean_q, "$options": "i"}},
+        ]
+        if len(digits_only) >= 3:
+            user_criteria.append({"phone_number": {"$regex": re.escape(digits_only)}})
+
+        matched_users = list(db.users.find({"$or": user_criteria, "is_active": True}).limit(10))
+        user_ids = [u["user_id"] for u in matched_users]
+
+        # Also match direct account number
+        if len(digits_only) >= 3:
+            acc_matches = list(db.accounts.find({"account_number": {"$regex": re.escape(digits_only)}, "status": "ACTIVE"}).limit(5))
+            for acc in acc_matches:
+                if acc["user_id"] not in user_ids:
+                    u = db.users.find_one({"user_id": acc["user_id"]})
+                    if u and u.get("is_active", True):
+                        matched_users.append(u)
+                        user_ids.append(u["user_id"])
+    else:
+        # Default: return other registered active customers as suggestions
+        matched_users = list(db.users.find({
+            "user_id": {"$ne": current_user["user_id"]},
+            "role": "customer",
+            "is_active": True
+        }).limit(8))
+
+    seen_accounts = set()
+    for u in matched_users:
+        u_accs = list(db.accounts.find({"user_id": u["user_id"], "status": "ACTIVE"}))
+        for acc in u_accs:
+            if acc["account_id"] in seen_accounts:
+                continue
+            seen_accounts.add(acc["account_id"])
+            is_self = (u["user_id"] == current_user["user_id"])
+            username = u.get("username", "")
+            pay_id = u.get("apex_pay_id") or (f"{username.lower()}@apex" if username else "")
+            beneficiaries.append({
+                "user_id": u["user_id"],
+                "full_name": u.get("full_name") or username,
+                "username": username,
+                "apex_pay_id": pay_id,
+                "phone_number": u.get("phone_number", ""),
+                "account_id": acc["account_id"],
+                "account_number": acc["account_number"],
+                "account_type": acc.get("account_type", "SAVINGS"),
+                "is_self": is_self
+            })
+
+    return jsonify({
+        "success": True,
+        "data": beneficiaries
     }), 200
 
 

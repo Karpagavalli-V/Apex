@@ -12,7 +12,9 @@ import {
   ArrowUpRight,
   Clock,
   RefreshCw,
+  Smartphone,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import { formatPaiseToINR, formatDate, maskAccountNumber } from '../utils/formatters';
 import bankingService from '../services/bankingService';
 import Button from '../components/common/Button';
@@ -20,6 +22,7 @@ import Badge from '../components/common/Badge';
 import EmptyState from '../components/common/EmptyState';
 
 export const AccountsPage = () => {
+  const { user } = useAuth();
   const {
     accounts,
     loadingAccounts,
@@ -123,6 +126,46 @@ export const AccountsPage = () => {
           >
             Open New Account
           </Button>
+        </div>
+      </div>
+
+      {/* Apex Pay / GPay Style Profile Bar */}
+      <div className="bg-gradient-to-r from-[#111e38] via-[#1a2d54] to-[#122244] rounded-2xl p-5 text-white shadow-md border border-white/10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-400 to-indigo-500 text-white font-bold flex items-center justify-center text-lg shadow-md ring-2 ring-white/20 shrink-0">
+            {user?.full_name?.charAt(0).toUpperCase() || user?.username?.charAt(0).toUpperCase() || 'U'}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-base text-white tracking-tight">{user?.full_name || user?.username}</span>
+              <span className="text-[10px] font-bold bg-emerald-400/20 text-emerald-300 border border-emerald-400/30 px-2 py-0.5 rounded-full flex items-center gap-1">
+                <Check className="w-2.5 h-2.5" /> Apex Pay Active
+              </span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 text-xs text-blue-100/80 mt-1.5 font-mono">
+              <div className="flex items-center gap-1.5 bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                <span className="text-slate-300 font-sans text-[11px]">Pay ID:</span>
+                <span className="text-white font-semibold">{user?.apex_pay_id || (user?.username ? `${user.username.toLowerCase()}@apex` : '')}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(user?.apex_pay_id || `${user?.username}@apex`, 'pay_id')}
+                  className="text-slate-300 hover:text-white p-0.5 ml-1"
+                  title="Copy Pay ID"
+                >
+                  {copiedId === 'pay_id' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+              {user?.phone_number && (
+                <div className="flex items-center gap-1 bg-white/10 px-2.5 py-1 rounded-lg border border-white/10">
+                  <Smartphone className="w-3.5 h-3.5 text-slate-300" />
+                  <span className="text-white">{user.phone_number}</span>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="text-xs text-blue-100/70 max-w-xs md:text-right">
+          Share your <strong className="text-white font-semibold">Apex Pay ID</strong> or <strong className="text-white font-semibold">Phone Number</strong> to receive instant transfers without sharing 12-digit account numbers.
         </div>
       </div>
 

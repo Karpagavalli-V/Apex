@@ -47,7 +47,8 @@ def register():
         username=validated["username"],
         plain_password=validated["password"],
         full_name=validated["full_name"],
-        role="customer"
+        role="customer",
+        phone_number=str(data.get("phone_number") or data.get("phone") or "").strip()
     )
 
     try:

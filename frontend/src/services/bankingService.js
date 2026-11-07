@@ -77,6 +77,12 @@ export const bankingService = {
     const response = await apiClient.get(url);
     return response.data;
   },
+
+  async lookupBeneficiaries(query = '') {
+    const url = query ? `/accounts/lookup-beneficiary?q=${encodeURIComponent(query)}` : '/accounts/lookup-beneficiary';
+    const response = await apiClient.get(url);
+    return response.data || [];
+  },
 };
 
 export default bankingService;

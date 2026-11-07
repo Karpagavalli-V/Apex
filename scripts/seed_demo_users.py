@@ -27,24 +27,32 @@ USERS_CONFIG = [
         "email": "charu@example.com",
         "username": "charu_01",
         "password": "Charu@1234",
+        "phone_number": "+91 98765 01001",
+        "apex_pay_id": "charu_01@apex",
     },
     {
         "full_name": "Maha",
         "email": "maha@example.com",
         "username": "maha_02",
         "password": "Maha@1234",
+        "phone_number": "+91 98765 02002",
+        "apex_pay_id": "maha_02@apex",
     },
     {
         "full_name": "Suruthika",
         "email": "suruthika@example.com",
         "username": "suruthika_03",
         "password": "Suru@1234",
+        "phone_number": "+91 98765 03003",
+        "apex_pay_id": "suruthika_03@apex",
     },
     {
         "full_name": "Divya",
         "email": "divya@example.com",
         "username": "divya_04",
         "password": "Divya@1234",
+        "phone_number": "+91 98765 04004",
+        "apex_pay_id": "divya_04@apex",
     },
 ]
 
@@ -75,19 +83,23 @@ def seed_users_and_history():
                     "$set": {
                         "password_hash": pwd_hash,
                         "full_name": u["full_name"],
+                        "phone_number": u.get("phone_number", ""),
+                        "apex_pay_id": u.get("apex_pay_id", f"{username}@apex"),
                         "role": "customer",
                         "is_active": True,
                         "updated_at": now
                     }
                 }
             )
-            print(f"[UPDATED] User '{username}' ({email}) -> password reset to '{u['password']}'")
+            print(f"[UPDATED] User '{username}' ({email}) -> Pay ID: {u.get('apex_pay_id')}, Phone: {u.get('phone_number')}")
         else:
             user_id = f"usr_{uuid.uuid4().hex[:12]}"
             doc = {
                 "user_id": user_id,
                 "email": email,
                 "username": username,
+                "phone_number": u.get("phone_number", ""),
+                "apex_pay_id": u.get("apex_pay_id", f"{username}@apex"),
                 "password_hash": pwd_hash,
                 "full_name": u["full_name"],
                 "role": "customer",

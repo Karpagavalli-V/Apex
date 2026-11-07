@@ -13,20 +13,25 @@ class User:
         plain_password: str,
         full_name: str,
         role: str = "customer",
-        is_active: bool = True
+        is_active: bool = True,
+        phone_number: str = ""
     ) -> dict:
         """
         Creates a new user document for MongoDB storage.
-        Always hashes password using bcrypt and assigns unique user_id.
+        Always hashes password using bcrypt and assigns unique user_id and apex_pay_id.
         """
         if role not in VALID_ROLES:
             raise ValueError(f"Invalid user role: {role}. Must be one of {VALID_ROLES}")
 
         now = datetime.now(timezone.utc)
+        clean_username = username.strip()
+        clean_phone = phone_number.strip()
         return {
             "user_id": f"usr_{uuid.uuid4().hex[:12]}",
             "email": email.strip().lower(),
-            "username": username.strip(),
+            "username": clean_username,
+            "apex_pay_id": f"{clean_username.lower()}@apex",
+            "phone_number": clean_phone,
             "password_hash": password_manager.hash_password(plain_password),
             "full_name": full_name.strip(),
             "role": role,
@@ -52,10 +57,16 @@ class User:
         if isinstance(updated_at, datetime):
             updated_at = updated_at.isoformat()
 
+        username = user_doc.get("username", "")
+        apex_pay_id = user_doc.get("apex_pay_id") or (f"{username.lower()}@apex" if username else "")
+        phone_number = user_doc.get("phone_number", "")
+
         return {
             "user_id": user_doc.get("user_id"),
             "email": user_doc.get("email"),
-            "username": user_doc.get("username"),
+            "username": username,
+            "apex_pay_id": apex_pay_id,
+            "phone_number": phone_number,
             "full_name": user_doc.get("full_name"),
             "role": user_doc.get("role", "customer"),
             "is_active": user_doc.get("is_active", True),

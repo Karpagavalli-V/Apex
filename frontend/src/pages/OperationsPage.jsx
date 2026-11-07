@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import {
   ArrowDownLeft,
@@ -6,6 +6,9 @@ import {
   Repeat,
   ShieldCheck,
   CheckCircle2,
+  Search,
+  User,
+  X,
 } from 'lucide-react';
 import bankingService from '../services/bankingService';
 import { formatPaiseToINR, maskAccountNumber } from '../utils/formatters';
@@ -13,14 +16,6 @@ import Button from '../components/common/Button';
 import Alert from '../components/common/Alert';
 import Badge from '../components/common/Badge';
 import Modal from '../components/common/Modal';
-
-const DEMO_BENEFICIARIES = [
-  { name: 'Charu (Savings)', number: '100466777930' },
-  { name: 'Charu (Checking)', number: '100777536164' },
-  { name: 'Maha', number: '100247052120' },
-  { name: 'Suruthika', number: '100684224129' },
-  { name: 'Divya', number: '100735941819' },
-];
 
 export const OperationsPage = () => {
   const { accounts, loadingAccounts, refreshAccounts } = useOutletContext();
@@ -33,8 +28,14 @@ export const OperationsPage = () => {
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
 
-  // Transfer specific
+  // Transfer specific: GPay style
   const [destinationAccount, setDestinationAccount] = useState('');
+  const [selectedBeneficiary, setSelectedBeneficiary] = useState(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null);
 
   // UI / Submission state
   const [loading, setLoading] = useState(false);
@@ -45,6 +46,59 @@ export const OperationsPage = () => {
   const currentAccount = accounts.find((a) => a.account_id === selectedAccountId);
   const numericAmount = parseFloat(amount) || 0;
   const amountPaise = Math.round(numericAmount * 100);
+
+  // Search beneficiaries as user types (GPay style)
+  useEffect(() => {
+    if (activeTab !== 'transfer') return;
+    let active = true;
+    const fetchBeneficiaries = async () => {
+      try {
+        setIsSearching(true);
+        const results = await bankingService.lookupBeneficiaries(searchQuery.trim());
+        if (active) {
+          const filtered = (results || []).filter(
+            (b) => b.account_number !== currentAccount?.account_number
+          );
+          setSearchResults(filtered);
+        }
+      } catch (err) {
+        console.error('Failed to lookup beneficiaries:', err);
+      } finally {
+        if (active) setIsSearching(false);
+      }
+    };
+
+    const timer = setTimeout(fetchBeneficiaries, 200);
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [searchQuery, currentAccount?.account_number, activeTab]);
+
+  // Handle outside click to close dropdown
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleSelectBeneficiary = (b) => {
+    setSelectedBeneficiary(b);
+    setDestinationAccount(b.account_number || b.apex_pay_id);
+    setSearchQuery('');
+    setShowDropdown(false);
+    setError(null);
+  };
+
+  const handleClearBeneficiary = () => {
+    setSelectedBeneficiary(null);
+    setDestinationAccount('');
+    setSearchQuery('');
+  };
 
   // Validation
   const validateForm = () => {
@@ -68,9 +122,9 @@ export const OperationsPage = () => {
     }
 
     if (activeTab === 'transfer') {
-      const trimmedDest = destinationAccount.trim();
-      if (!trimmedDest || trimmedDest.length !== 12 || !/^\d{12}$/.test(trimmedDest)) {
-        setError('Destination account number must be exactly 12 numeric digits.');
+      const trimmedDest = destinationAccount.trim() || searchQuery.trim();
+      if (!trimmedDest) {
+        setError('Recipient (Name, Phone, Apex Pay ID, or Account Number) is required.');
         return false;
       }
       if (trimmedDest === currentAccount.account_number) {
@@ -108,8 +162,10 @@ export const OperationsPage = () => {
           description: description || 'Account withdrawal',
         });
       } else if (activeTab === 'transfer') {
+        const targetParam = destinationAccount.trim() || searchQuery.trim();
         result = await bankingService.transfer(selectedAccountId, {
-          destination_account_number: destinationAccount.trim(),
+          destination_account_number: targetParam,
+          target_account: targetParam,
           amount: numericAmount,
           description: description || 'Account fund transfer',
         });
@@ -120,6 +176,8 @@ export const OperationsPage = () => {
       setDescription('');
       if (activeTab === 'transfer') {
         setDestinationAccount('');
+        setSelectedBeneficiary(null);
+        setSearchQuery('');
       }
       await refreshAccounts();
     } catch (err) {
@@ -292,15 +350,18 @@ export const OperationsPage = () => {
 
           {/* Transfer Destination Field (Only for Transfer tab) */}
           {activeTab === 'transfer' && (
-            <div>
+            <div ref={dropdownRef} className="relative">
               <div className="flex justify-between items-center mb-2">
                 <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                  Recipient 12-Digit Account Number
+                  Recipient (Pay ID, Phone, Name, or Account)
                 </label>
                 {accounts.filter((a) => a.account_id !== selectedAccountId).length > 0 && (
                   <select
                     onChange={(e) => {
-                      if (e.target.value) setDestinationAccount(e.target.value);
+                      if (e.target.value) {
+                        setDestinationAccount(e.target.value);
+                        setSelectedBeneficiary(null);
+                      }
                     }}
                     value=""
                     className="text-xs bg-slate-100 border border-slate-200 text-slate-700 rounded-lg px-2 py-1 focus:outline-none cursor-pointer hover:bg-slate-200"
@@ -316,43 +377,116 @@ export const OperationsPage = () => {
                   </select>
                 )}
               </div>
-              <input
-                type="text"
-                maxLength={12}
-                value={destinationAccount}
-                onChange={(e) => setDestinationAccount(e.target.value.replace(/\D/g, ''))}
-                placeholder="e.g. 100010002000"
-                className="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
-              />
-              <p className="text-xs text-slate-400 mt-1">
-                Must be an existing 12-digit Apex Bank account number.
-              </p>
 
-              {/* Quick Demo Beneficiaries */}
-              <div className="mt-2.5">
-                <div className="text-[11px] text-slate-500 font-medium mb-1.5 flex items-center justify-between">
-                  <span>Quick Select Recipient (Testing):</span>
-                  <span className="text-[10px] text-slate-400">Full 12-digit account</span>
+              {selectedBeneficiary ? (
+                /* Verified Recipient Card (GPay style) */
+                <div className="p-3.5 bg-emerald-50/80 border border-emerald-200 rounded-2xl flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-emerald-600 to-teal-500 text-white font-bold flex items-center justify-center text-sm shadow-sm ring-2 ring-emerald-100">
+                      {selectedBeneficiary.full_name?.charAt(0).toUpperCase() || 'U'}
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-1.5 font-semibold text-slate-900 text-sm">
+                        <span>{selectedBeneficiary.full_name}</span>
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.2 rounded-full">
+                          VERIFIED
+                        </span>
+                      </div>
+                      <div className="text-xs text-slate-500 flex items-center gap-2 mt-0.5 font-mono">
+                        <span className="text-emerald-700 font-medium">{selectedBeneficiary.apex_pay_id}</span>
+                        {selectedBeneficiary.phone_number && (
+                          <span>• {selectedBeneficiary.phone_number}</span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono mt-0.5">
+                        A/C: {selectedBeneficiary.account_number} ({selectedBeneficiary.account_type})
+                      </div>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleClearBeneficiary}
+                    className="text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white hover:bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200 transition-colors"
+                  >
+                    Change
+                  </button>
                 </div>
-                <div className="flex flex-wrap gap-1.5">
-                  {DEMO_BENEFICIARIES
-                    .filter((b) => b.number !== currentAccount?.account_number)
-                    .map((b) => (
+              ) : (
+                /* GPay Dynamic Search Input */
+                <div className="relative">
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={searchQuery || destinationAccount}
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        setSearchQuery(val);
+                        setDestinationAccount(val);
+                        setShowDropdown(true);
+                      }}
+                      onFocus={() => setShowDropdown(true)}
+                      placeholder="Search Name, Phone, or charu_01@apex..."
+                      className="w-full pl-10 pr-9 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-medium"
+                    />
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+                    {(searchQuery || destinationAccount) && (
                       <button
-                        key={b.number}
                         type="button"
-                        onClick={() => setDestinationAccount(b.number)}
-                        className={`text-[11px] px-2.5 py-1 rounded-full border transition-all ${
-                          destinationAccount === b.number
-                            ? 'bg-brand-50 border-brand-500 text-brand-700 font-semibold shadow-xs'
-                            : 'bg-slate-50 border-slate-200 text-slate-600 hover:bg-slate-100 hover:border-slate-300'
-                        }`}
+                        onClick={() => {
+                          setSearchQuery('');
+                          setDestinationAccount('');
+                        }}
+                        className="absolute right-3 p-1 text-slate-400 hover:text-slate-600 rounded-md"
                       >
-                        {b.name} ({b.number.slice(-4)})
+                        <X className="w-3.5 h-3.5" />
                       </button>
-                    ))}
+                    )}
+                  </div>
+
+                  {/* Dropdown with Real-Time Suggestions */}
+                  {showDropdown && searchResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1.5 bg-white border border-slate-200 rounded-2xl shadow-xl z-50 max-h-60 overflow-y-auto divide-y divide-slate-100">
+                      <div className="px-3.5 py-2 bg-slate-50 text-[10px] font-bold uppercase tracking-wider text-slate-500 sticky top-0">
+                        Suggested Verified Beneficiaries
+                      </div>
+                      {searchResults.map((b) => (
+                        <button
+                          key={b.account_id || b.account_number || b.username}
+                          type="button"
+                          onClick={() => handleSelectBeneficiary(b)}
+                          className="w-full p-3 text-left hover:bg-indigo-50/60 transition-colors flex items-center justify-between gap-3 group"
+                        >
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="w-8 h-8 rounded-full bg-indigo-100 border border-indigo-200 text-indigo-700 font-bold text-xs flex items-center justify-center shrink-0 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
+                              {b.full_name?.charAt(0).toUpperCase() || <User className="w-3.5 h-3.5" />}
+                            </div>
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-1.5">
+                                <span className="font-semibold text-xs text-slate-900 truncate">
+                                  {b.full_name}
+                                </span>
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                              </div>
+                              <div className="text-[11px] text-slate-500 truncate flex items-center gap-1.5 font-mono">
+                                <span className="text-indigo-600 font-medium">{b.apex_pay_id}</span>
+                                {b.phone_number && (
+                                  <span>• {b.phone_number}</span>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right shrink-0">
+                            <span className="text-[10px] font-mono bg-slate-100 text-slate-600 px-2 py-0.5 rounded-md border border-slate-200">
+                              A/C: ••••{b.account_number?.slice(-4)}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -457,8 +591,10 @@ export const OperationsPage = () => {
               </div>
               {activeTab === 'transfer' && (
                 <div className="flex justify-between items-center text-xs text-slate-500">
-                  <span>Destination Account</span>
-                  <span className="font-mono text-slate-900">{destinationAccount}</span>
+                  <span>Recipient</span>
+                  <span className="font-mono text-slate-900 font-semibold">
+                    {selectedBeneficiary ? `${selectedBeneficiary.full_name} (${selectedBeneficiary.apex_pay_id})` : destinationAccount}
+                  </span>
                 </div>
               )}
               <div className="flex justify-between items-center text-xs text-slate-500">
