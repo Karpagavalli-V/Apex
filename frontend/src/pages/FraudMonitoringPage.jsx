@@ -283,10 +283,11 @@ export const FraudMonitoringPage = () => {
                 </span>
                 <input
                   type="number"
-                  step="100"
+                  step="any"
                   min="1"
                   value={testAmount}
                   onChange={(e) => setTestAmount(e.target.value)}
+                  placeholder="e.g. 5000"
                   className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-slate-200 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-brand-500"
                 />
               </div>
