@@ -154,12 +154,13 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
   };
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title="Transfer Money"
-      subtitle="Instantly transfer funds by Apex Pay ID, Phone Number, Name, or Account."
-    >
+    <>
+      <Modal
+        isOpen={isOpen && !showPinModal}
+        onClose={onClose}
+        title="Transfer Money"
+        subtitle="Instantly transfer funds by Apex Pay ID, Phone Number, Name, or Account."
+      >
       {error && <Alert variant="error" className="mb-4">{error}</Alert>}
 
       {!showConfirm ? (
@@ -446,10 +447,11 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
           </div>
         </div>
       )}
+      </Modal>
 
-      {/* 4-Digit UPI PIN Verification Modal (GPay / PhonePe style) */}
+      {/* 4-Digit UPI PIN Verification Modal (GPay / PhonePe style) rendered at root */}
       <UpiPinModal
-        isOpen={showPinModal}
+        isOpen={isOpen && showPinModal}
         onClose={() => {
           if (!loading) setShowPinModal(false);
         }}
@@ -460,7 +462,7 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
         loading={loading}
         error={pinError}
       />
-    </Modal>
+    </>
   );
 };
 

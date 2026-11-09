@@ -134,3 +134,4 @@ export const ChangePinModal = ({ isOpen, onClose, onSuccess }) => {
 };
 
 export default ChangePinModal;
+
