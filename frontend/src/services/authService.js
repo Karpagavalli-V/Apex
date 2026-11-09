@@ -32,6 +32,14 @@ export const authService = {
     return response;
   },
 
+  async setTransactionPin({ pin, confirm_pin }) {
+    const response = await apiClient.post('/auth/transaction-pin', {
+      pin,
+      confirm_pin,
+    });
+    return response.data;
+  },
+
   async createAdmin({ username, email, password, full_name }) {
     const response = await apiClient.post('/auth/admin/create-admin', {
       username,

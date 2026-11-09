@@ -16,6 +16,7 @@ import Button from '../components/common/Button';
 import Alert from '../components/common/Alert';
 import Badge from '../components/common/Badge';
 import Modal from '../components/common/Modal';
+import UpiPinModal from '../components/banking/UpiPinModal';
 
 export const OperationsPage = () => {
   const { accounts, loadingAccounts, refreshAccounts } = useOutletContext();
@@ -41,6 +42,8 @@ export const OperationsPage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinError, setPinError] = useState(null);
   const [lastReceipt, setLastReceipt] = useState(null);
 
   const currentAccount = accounts.find((a) => a.account_id === selectedAccountId);
@@ -144,6 +147,13 @@ export const OperationsPage = () => {
   };
 
   const handleExecuteOperation = async () => {
+    if (activeTab === 'transfer') {
+      setShowConfirmModal(false);
+      setPinError(null);
+      setShowPinModal(true);
+      return;
+    }
+
     setShowConfirmModal(false);
     setLoading(true);
     setError(null);
@@ -161,28 +171,47 @@ export const OperationsPage = () => {
           amount: numericAmount,
           description: description || 'Account withdrawal',
         });
-      } else if (activeTab === 'transfer') {
-        const targetParam = destinationAccount.trim() || searchQuery.trim();
-        result = await bankingService.transfer(selectedAccountId, {
-          destination_account_number: targetParam,
-          target_account: targetParam,
-          amount: numericAmount,
-          description: description || 'Account fund transfer',
-        });
       }
 
       setLastReceipt(result);
       setAmount('');
       setDescription('');
-      if (activeTab === 'transfer') {
-        setDestinationAccount('');
-        setSelectedBeneficiary(null);
-        setSearchQuery('');
-      }
       await refreshAccounts();
     } catch (err) {
       console.error('Operation error:', err);
       setError(err.message || 'Operation failed. Please check parameters and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePinConfirm = async (enteredPin) => {
+    setLoading(true);
+    setPinError(null);
+    setError(null);
+    setLastReceipt(null);
+
+    try {
+      const targetParam = destinationAccount.trim() || searchQuery.trim();
+      const result = await bankingService.transfer(selectedAccountId, {
+        destination_account_number: targetParam,
+        target_account: targetParam,
+        amount: numericAmount,
+        description: description || 'Account fund transfer',
+        transaction_pin: enteredPin,
+      });
+
+      setShowPinModal(false);
+      setLastReceipt(result);
+      setAmount('');
+      setDescription('');
+      setDestinationAccount('');
+      setSelectedBeneficiary(null);
+      setSearchQuery('');
+      await refreshAccounts();
+    } catch (err) {
+      console.error('Transfer error:', err);
+      setPinError(err.message || 'Transfer declined. Please verify your UPI PIN and try again.');
     } finally {
       setLoading(false);
     }
@@ -625,12 +654,26 @@ export const OperationsPage = () => {
                 loading={loading}
                 onClick={handleExecuteOperation}
               >
-                Execute Now
+                {activeTab === 'transfer' ? 'Proceed to UPI PIN' : 'Execute Now'}
               </Button>
             </div>
           </div>
         </Modal>
       )}
+
+      {/* 4-Digit UPI PIN Verification Modal (GPay / PhonePe style) */}
+      <UpiPinModal
+        isOpen={showPinModal}
+        onClose={() => {
+          if (!loading) setShowPinModal(false);
+        }}
+        onConfirm={handlePinConfirm}
+        amount={numericAmount}
+        recipient={selectedBeneficiary ? `${selectedBeneficiary.full_name} (${selectedBeneficiary.apex_pay_id})` : (destinationAccount.trim() || searchQuery.trim())}
+        sourceAccount={currentAccount}
+        loading={loading}
+        error={pinError}
+      />
     </div>
   );
 };

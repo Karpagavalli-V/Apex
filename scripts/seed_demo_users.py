@@ -73,6 +73,7 @@ def seed_users_and_history():
         email = u["email"].lower().strip()
         username = u["username"].strip()
         pwd_hash = password_manager.hash_password(u["password"])
+        pin_hash = password_manager.hash_password("1234")
 
         existing = db.users.find_one({"$or": [{"email": email}, {"username": username}]})
         if existing:
@@ -82,6 +83,7 @@ def seed_users_and_history():
                 {
                     "$set": {
                         "password_hash": pwd_hash,
+                        "transaction_pin_hash": pin_hash,
                         "full_name": u["full_name"],
                         "phone_number": u.get("phone_number", ""),
                         "apex_pay_id": u.get("apex_pay_id", f"{username}@apex"),
@@ -91,7 +93,7 @@ def seed_users_and_history():
                     }
                 }
             )
-            print(f"[UPDATED] User '{username}' ({email}) -> Pay ID: {u.get('apex_pay_id')}, Phone: {u.get('phone_number')}")
+            print(f"[UPDATED] User '{username}' ({email}) -> Pay ID: {u.get('apex_pay_id')}, Phone: {u.get('phone_number')}, UPI PIN: 1234")
         else:
             user_id = f"usr_{uuid.uuid4().hex[:12]}"
             doc = {
@@ -101,6 +103,7 @@ def seed_users_and_history():
                 "phone_number": u.get("phone_number", ""),
                 "apex_pay_id": u.get("apex_pay_id", f"{username}@apex"),
                 "password_hash": pwd_hash,
+                "transaction_pin_hash": pin_hash,
                 "full_name": u["full_name"],
                 "role": "customer",
                 "is_active": True,

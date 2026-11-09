@@ -207,8 +207,11 @@ def validate_transfer_payload(data: dict) -> dict:
     if len(description) > 255:
         raise ValidationError("Description cannot exceed 255 characters")
 
+    transaction_pin = str(data.get("transaction_pin", "") or data.get("pin", "")).strip()
+
     return {
         "amount_paise": paise,
         "target_account": target_account,
-        "description": description
+        "description": description,
+        "transaction_pin": transaction_pin
     }

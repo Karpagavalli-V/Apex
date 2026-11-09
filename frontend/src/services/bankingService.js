@@ -52,7 +52,7 @@ export const bankingService = {
     return response.data;
   },
 
-  async transfer(accountId, { destination_account_number, target_account, amount, description }) {
+  async transfer(accountId, { destination_account_number, target_account, amount, description, transaction_pin }) {
     const idempotencyKey = generateIdempotencyKey();
     const target = target_account || destination_account_number;
     const response = await apiClient.post(
@@ -63,6 +63,7 @@ export const bankingService = {
         destination_account_number: target,
         amount: Number(amount),
         description,
+        transaction_pin: transaction_pin ? String(transaction_pin).trim() : undefined,
       },
       { headers: { 'Idempotency-Key': idempotencyKey } }
     );

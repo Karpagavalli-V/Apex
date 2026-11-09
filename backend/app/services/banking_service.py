@@ -476,11 +476,13 @@ class BankingService:
         amount_paise: int,
         requesting_user: dict,
         description: str = "",
-        idempotency_key: str = None
+        idempotency_key: str = None,
+        transaction_pin: str = None
     ) -> dict:
         """
         Executes an atomic transfer between two accounts.
         Debits source account and credits target account within a transaction.
+        Enforces 4-digit UPI Transaction PIN verification for customer transfers.
         """
         user_id = requesting_user.get("user_id")
         cached = cls.check_idempotency(idempotency_key, user_id, "transfer")
@@ -496,6 +498,16 @@ class BankingService:
         is_admin = requesting_user.get("role") == "admin"
         if not (is_admin or source_account["user_id"] == user_id):
             raise AuthorizationError("You do not have permission to transfer funds from this account")
+
+        # Verify 4-digit UPI Transaction PIN for customer transfers
+        if not is_admin:
+            sender = db.users.find_one({"user_id": user_id})
+            if sender and sender.get("transaction_pin_hash"):
+                if not transaction_pin:
+                    raise ValidationError("4-digit UPI Transaction PIN is required to authorize this transfer.")
+                from app.models.user import User
+                if not User.verify_pin(transaction_pin, sender["transaction_pin_hash"]):
+                    raise ValidationError("Incorrect 4-digit UPI Transaction PIN. Transfer declined.")
 
         # Find target account by account_number, account_id, Apex Pay ID, phone, username, or email
         clean_identifier = str(target_account_identifier).strip()

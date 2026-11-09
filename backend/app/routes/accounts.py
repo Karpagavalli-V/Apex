@@ -265,7 +265,8 @@ def transfer_funds(account_id: str):
         amount_paise=validated["amount_paise"],
         requesting_user=user,
         description=validated["description"],
-        idempotency_key=idempotency_key
+        idempotency_key=idempotency_key,
+        transaction_pin=validated.get("transaction_pin")
     )
 
     return jsonify({

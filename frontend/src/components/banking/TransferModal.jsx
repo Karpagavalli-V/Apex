@@ -5,6 +5,7 @@ import Button from '../common/Button';
 import Alert from '../common/Alert';
 import { formatINR } from '../../utils/formatters';
 import bankingService from '../../services/bankingService';
+import UpiPinModal from './UpiPinModal';
 
 export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => {
   const [accountIdState, setAccountIdState] = useState('');
@@ -22,6 +23,8 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [showPinModal, setShowPinModal] = useState(false);
+  const [pinError, setPinError] = useState(null);
 
   const numAmount = parseFloat(amount) || 0;
   const sourceAccount = accounts.find((a) => a.account_id === selectedAccountId);
@@ -117,8 +120,14 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
     setShowConfirm(true);
   };
 
-  const handleConfirmExecute = async () => {
+  const handleProceedToPin = () => {
+    setPinError(null);
+    setShowPinModal(true);
+  };
+
+  const handlePinConfirm = async (enteredPin) => {
     setLoading(true);
+    setPinError(null);
     setError(null);
     try {
       const targetParam = destinationAccount.trim() || searchQuery.trim();
@@ -127,7 +136,9 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
         target_account: targetParam,
         amount: numAmount,
         description: description.trim() || 'Account Transfer',
+        transaction_pin: enteredPin,
       });
+      setShowPinModal(false);
       setShowConfirm(false);
       setAmount('');
       setDestinationAccount('');
@@ -136,8 +147,7 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
       onSuccess?.(result);
       onClose();
     } catch (err) {
-      setShowConfirm(false);
-      setError(err.message || 'Transfer failed. Please check recipient details and try again.');
+      setPinError(err.message || 'Transfer failed. Please check your UPI PIN and try again.');
     } finally {
       setLoading(false);
     }
@@ -430,12 +440,26 @@ export const TransferModal = ({ isOpen, onClose, accounts = [], onSuccess }) => 
             <Button variant="outline" onClick={() => setShowConfirm(false)} disabled={loading}>
               Back
             </Button>
-            <Button variant="primary" onClick={handleConfirmExecute} loading={loading}>
-              Confirm & Send
+            <Button variant="primary" onClick={handleProceedToPin} loading={loading}>
+              Proceed to UPI PIN
             </Button>
           </div>
         </div>
       )}
+
+      {/* 4-Digit UPI PIN Verification Modal (GPay / PhonePe style) */}
+      <UpiPinModal
+        isOpen={showPinModal}
+        onClose={() => {
+          if (!loading) setShowPinModal(false);
+        }}
+        onConfirm={handlePinConfirm}
+        amount={numAmount}
+        recipient={selectedBeneficiary ? `${selectedBeneficiary.full_name} (${selectedBeneficiary.apex_pay_id})` : (destinationAccount.trim() || searchQuery.trim())}
+        sourceAccount={sourceAccount}
+        loading={loading}
+        error={pinError}
+      />
     </Modal>
   );
 };

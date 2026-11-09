@@ -214,3 +214,36 @@ def create_admin():
             "user": User.serialize(admin_doc)
         }
     }), 201
+
+
+@auth_bp.route("/transaction-pin", methods=["POST"])
+@jwt_required
+def set_transaction_pin():
+    """Configures or updates the user's 4-digit UPI Transaction PIN."""
+    current_user = get_current_user()
+    data = request.get_json(silent=True) or {}
+    pin = str(data.get("pin", "")).strip()
+    confirm_pin = str(data.get("confirm_pin", "")).strip()
+
+    if not pin or not confirm_pin:
+        raise ValidationError("Both 'pin' and 'confirm_pin' are required.")
+
+    if pin != confirm_pin:
+        raise ValidationError("PIN and confirmation PIN do not match.")
+
+    try:
+        pin_hash = User.hash_pin(pin)
+    except ValueError as e:
+        raise ValidationError(str(e))
+
+    db = mongo_manager.get_db()
+    db.users.update_one(
+        {"user_id": current_user["user_id"]},
+        {"$set": {"transaction_pin_hash": pin_hash, "updated_at": datetime.now(timezone.utc)}}
+    )
+    logger.info(f"User {current_user['user_id']} updated UPI Transaction PIN")
+
+    return jsonify({
+        "success": True,
+        "message": "4-Digit UPI Transaction PIN configured successfully."
+    }), 200

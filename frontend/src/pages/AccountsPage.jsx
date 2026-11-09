@@ -13,6 +13,7 @@ import {
   Clock,
   RefreshCw,
   Smartphone,
+  Lock,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { formatPaiseToINR, formatDate, maskAccountNumber } from '../utils/formatters';
@@ -20,6 +21,7 @@ import bankingService from '../services/bankingService';
 import Button from '../components/common/Button';
 import Badge from '../components/common/Badge';
 import EmptyState from '../components/common/EmptyState';
+import ChangePinModal from '../components/banking/ChangePinModal';
 
 export const AccountsPage = () => {
   const { user } = useAuth();
@@ -43,6 +45,7 @@ export const AccountsPage = () => {
   const [copiedId, setCopiedId] = useState(null);
   const [unmaskedAccounts, setUnmaskedAccounts] = useState({});
   const [refreshing, setRefreshing] = useState(false);
+  const [showChangePinModal, setShowChangePinModal] = useState(false);
 
   // Fetch account-specific transactions when selected account or filters change
   useEffect(() => {
@@ -164,8 +167,18 @@ export const AccountsPage = () => {
             </div>
           </div>
         </div>
-        <div className="text-xs text-blue-100/70 max-w-xs md:text-right">
-          Share your <strong className="text-white font-semibold">Apex Pay ID</strong> or <strong className="text-white font-semibold">Phone Number</strong> to receive instant transfers without sharing 12-digit account numbers.
+        <div className="flex flex-col md:items-end gap-2.5">
+          <div className="text-xs text-blue-100/70 max-w-xs md:text-right">
+            Share your <strong className="text-white font-semibold">Apex Pay ID</strong> or <strong className="text-white font-semibold">Phone Number</strong> to receive instant transfers.
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowChangePinModal(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 hover:bg-white/20 active:bg-white/25 text-white text-xs font-semibold rounded-xl border border-white/20 transition-all shadow-sm"
+          >
+            <Lock className="w-3.5 h-3.5 text-brand-300" />
+            <span>Set / Change UPI PIN</span>
+          </button>
         </div>
       </div>
 
@@ -440,6 +453,12 @@ export const AccountsPage = () => {
           )}
         </div>
       )}
+
+      {/* Set / Change 4-Digit UPI PIN Modal */}
+      <ChangePinModal
+        isOpen={showChangePinModal}
+        onClose={() => setShowChangePinModal(false)}
+      />
     </div>
   );
 };
